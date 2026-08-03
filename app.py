@@ -41,10 +41,17 @@ HTML_TEMPLATE = '''
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>24/7 メッセージ掲示板</title>
     <style>
+        /* 吹き出しの文字サイズや配置を調整 */
+        .msg { max-width: 70%; padding: 8px 12px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-all; display: flex; flex-direction: column; }
+
+        /* 時刻の文字（小さくグレーで表示） */
+        .time { font-size: 10px; color: #666; margin-top: 4px; align-self: flex-end; }
+        .my-msg .time { color: #335500; }  /* 自分の吹き出しの中の時刻色 */
+
+
         body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; background: #8cabd9; }
         h1 { color: white; text-align: center; font-size: 20px; }
         .chat-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 80px; }
-        .msg { max-width: 70%; padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-all; }
 
         /* 自分の投稿（右側・緑色） */
         .my-msg { align-self: flex-end; background: #85e249; color: #000; border-bottom-right-radius: 2px; }
@@ -62,7 +69,10 @@ HTML_TEMPLATE = '''
     <div class="chat-box">
 	{% for msg in messages %}
 	        <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
-			{{ msg.content }}
+			<span>{{ parts[0] }}</span>
+                       {% if parts|length > 1 %}
+                        <span class="time">{{ parts[1] }}</span>
+                       {% endif %}
 		</div>
 	{% else %}
 		<div class="msg other-msg">まだメッセージはありません。送信してみましょう!</div>
@@ -115,9 +125,9 @@ def add_message():
     if msg and DATABASE_URL:
         #今の時間を年月日時分のカタチで取得、加えて9時間足して日本時間のJSTに
         DIFF_JST_FROM_UTC = 9
-        now = datetime.datetime.utcnow() + datetime.timedelta(hours=DIFF_JST_FROM_UTC)
-        #メッセージ内容と時間とを結合させる
-        msg_with_time = f"{msg} ({now})"
+        now = (datetime.datetime.utcnow() + datetime.timedelta(hours=DIFF_JST_FROM_UTC)).strftime('%H:%M')
+        #メッセージ内容と時間とを結合させる。あとでCSSで整える
+        msg_with_time = f"{msg} ||| {now}"
 
         conn = get_db_connection()
         cur = conn.cursor()
