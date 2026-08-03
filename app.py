@@ -20,9 +20,13 @@ def init_db():
             CREATE TABLE IF NOT EXISTS messages (
                 id SERIAL PRIMARY KEY,
                 content TEXT NOT NULL,
-                user_id TEXT NOT NULL DEFAULT 'legacy'
             );
         ''')
+        #user_idカラムを強制的に追加する
+        cur.execute('''
+            ALTER TABLE messages ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT 'legacy';
+        ''')
+
         conn.commit()
         cur.close()
         conn.close()
