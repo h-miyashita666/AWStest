@@ -68,8 +68,9 @@ HTML_TEMPLATE = '''
     <h1>🚀 チャットルーム</h1>
     <div class="chat-box">
 	{% for msg in messages %}
-	        <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
-			<span>{{ parts[0] }}</span>
+                {% set parts = msg.content.split('|||') %}
+                <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
+                        <span>{{ parts[0] }}</span>
                        {% if parts|length > 1 %}
                         <span class="time">{{ parts[1] }}</span>
                        {% endif %}
