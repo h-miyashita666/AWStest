@@ -11,6 +11,7 @@ def get_db_connection():
 # 起動時にテーブルを作成
 def init_db():
     if DATABASE_URL:
+      try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute('''
@@ -22,6 +23,8 @@ def init_db():
         conn.commit()
         cur.close()
         conn.close()
+      except Exception as e:
+        print(f"Init DB Error: {e}")
 
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
@@ -62,6 +65,8 @@ HTML_TEMPLATE = '''
 
 @app.route('/')
 def index():
+    # ページが開かれた時テーブルがなければ自動作成する
+    init_db()
     messages = []
     if DATABASE_URL:
         try:
