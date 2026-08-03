@@ -104,6 +104,9 @@ HTML_TEMPLATE = '''
 
 
 <script>
+// python(jinja2)から自分のuser_idをJSに受け取る
+const myId = "{{ my_id }}";
+
 // サーバーとwebsocket接続を確立
   const socket = io();
 
@@ -121,10 +124,10 @@ HTML_TEMPLATE = '''
     const now = new Date();
     const hours = String(now.getHours()).padStart(2,'0');
     const minutes = String(now.getMinutes()).padStart(2,'0');
-    const timeStr = '${hours}:${minutes}';
+    const timeStr = `${hours}:${minutes}`;
     
     // 本文 ||| 時刻のフォーマットに作成
-    const fullContent = '${text} ||| ${timeStr}';
+    const fullContent = `${text} ||| ${timeStr}`;
     
     // サーバーへwebsocketでメッセージ送信
     socket.emit('send_message',{
@@ -141,7 +144,7 @@ HTML_TEMPLATE = '''
 // 送信ボタンクリックorEnterキーで送信
 sendBtn.addEventListener('click', sendMessage);
 input.addEventListener('keypress', (e) => {
-  id (e.key === 'Enter') sendMessage();
+  if (e.key === 'Enter') sendMessage();
   }
 );
 
@@ -169,7 +172,6 @@ socket.on('receive_message', (data) => {
   // 一番下まで自動スクロール
   window.scrollTo(0, document.body.scrollHeight);
 });
-</script>
 
 // 2000ミリ秒ごとにページの自動更新
 //  setInterval(() => {
@@ -206,7 +208,7 @@ def index():
             messages = [{'content': f"DBエラー: {e}", 'user_id': ''}]
     resp = make_response(render_template_string(HTML_TEMPLATE, messages=messages, my_id=my_id))
     resp.set_cookie('user_id',my_id,max_age=60*60*24*365)
-
+    return resp
 
 
 #@app.route('/add', methods=['POST'])
