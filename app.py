@@ -89,6 +89,9 @@ def add_message():
         jst_time = datetime.datetime,now(datetime.timezone.utc) + datetime.timedelta(hours=9)
         now_str = jst_time.strftime('%y-%m-%d %H:%M')
 
+        #メッセージ内容と時間とを結合させる
+        msg_with_time = f"{msg} ({now_str})"
+
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute('INSERT INTO messages (content) VALUES (%s);', (msg_with_time,))
