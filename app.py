@@ -82,11 +82,16 @@ def index():
 
 @app.route('/add', methods=['POST'])
 def add_message():
+    init_db()
     msg = request.form.get('message')
     if msg and DATABASE_URL:
+        #今の時間を年月日時分のカタチで取得、加えて9時間足して日本時間のJSTに
+        jst_time = datetime.datetime,now(datetime.timezone.utc) + datetime.timedelta(hours=9)
+        now_str = jst_time.strftime('%y-%m-%d %H:%M')
+
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO messages (content) VALUES (%s);', (msg,))
+        cur.execute('INSERT INTO messages (content) VALUES (%s);', (msg_with_time,))
         conn.commit()
         cur.close()
         conn.close()
