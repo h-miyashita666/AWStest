@@ -88,7 +88,7 @@ def add_message():
     if msg and DATABASE_URL:
         #今の時間を年月日時分のカタチで取得、加えて9時間足して日本時間のJSTに
         DIFF_JST_FROM_UTC = 9
-        now = datetime.datetime.utcnow + datetime.timedelta(hours=DFF_JST_FROM_UTC)
+        now = datetime.datetime.utcnow() + datetime.timedelta(hours=DIFF_JST_FROM_UTC)
         #メッセージ内容と時間とを結合させる
         msg_with_time = f"{msg} ({now})"
 
