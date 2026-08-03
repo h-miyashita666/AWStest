@@ -19,7 +19,7 @@ def init_db():
         cur.execute('''
             CREATE TABLE IF NOT EXISTS messages (
                 id SERIAL PRIMARY KEY,
-                content TEXT NOT NULL,
+                content TEXT NOT NULL
             );
         ''')
         #user_idカラムを強制的に追加する
@@ -61,7 +61,7 @@ HTML_TEMPLATE = '''
     <h1>🚀 チャットルーム</h1>
     <div class="chat-box">
 	{% for msg in messages %}
-	        <div class="msg {% if msg.usr_id == my_id %}my-msg{% else %}other-msg{% endif %}">
+	        <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
 			{{ msg.content }}
 		</div>
 	{% else %}
