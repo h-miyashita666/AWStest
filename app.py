@@ -1,6 +1,8 @@
 import os
 from flask import Flask, request, render_template_string, redirect
 import psycopg2
+import datetime
+import pytz
 
 app = Flask(__name__)
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -86,7 +88,7 @@ def add_message():
     msg = request.form.get('message')
     if msg and DATABASE_URL:
         #今の時間を年月日時分のカタチで取得、加えて9時間足して日本時間のJSTに
-        now = (datetime.datetime.now() + datetime.timedelta(hours=9)).strftime('%Y-%m-%d %H:%M')
+        now = datetime.datetime.now(pytz.timezone('Asia/Tokyo'))
         #メッセージ内容と時間とを結合させる
         msg_with_time = f"{msg} ({now})"
 
