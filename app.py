@@ -105,7 +105,7 @@ HTML_TEMPLATE = '''
 
 <script>
 // python(jinja2)から自分のuser_idをJSに受け取る
-const myId = "{{ my_id }}";
+  const myId = "{{ my_id }}";
 
 // サーバーとwebsocket接続を確立
   const socket = io();
