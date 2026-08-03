@@ -3,8 +3,13 @@ from flask import Flask, request, render_template_string, redirect, make_respons
 import psycopg2
 import datetime
 import uuid
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
+
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
@@ -39,6 +44,8 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <title>24/7 メッセージ掲示板</title>
     <style>
         /* 1メッセージ全体のグループ */
@@ -89,18 +96,87 @@ HTML_TEMPLATE = '''
     </div>
 
    <div class="input-area">
-	<form action="/add" method="POST">
-            <input type="text" name="message" placeholder="メッセージを入力..." required>
-            <button type="submit">送信</button>
-        </form>
+      <div style="width: 100%; max-width: 500px; display: flex; gap: 8px;">
+        <input type="text" id="message-input" placeholder="メッセージを入力...">
+        <button type="button" id="send-btn">送信</button>
+      </div>
     </div>
 
+
 <script>
-// 2000ミリ秒ごとにページの自動更新
-  setInterval(() => {
-      window.location.reload();
-    }, 2000);
+// サーバーとwebsocket接続を確立
+  const socket = io();
+
+// Jinja2(python)から自身のmy_idをjavascript変数として受け取る
+  const input = document.getElementById('message-input');
+  const sendBtn = document.getElementById('send-btn');
+  const chatBox = document.querySelector('.chat-box');
+
+// メッセージ送信処理
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // 日本時間の時分を作成
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2,'0');
+    const minutes = String(now.getMinutes()).padStart(2,'0');
+    const timeStr = '${hours}:${minutes}';
+    
+    // 本文 ||| 時刻のフォーマットに作成
+    const fullContent = '${text} ||| ${timeStr}';
+    
+    // サーバーへwebsocketでメッセージ送信
+    socket.emit('send_message',{
+      content: fullContent,
+      user_id: myId
+      }
+    );
+    
+    // 入力欄をクリア
+    input.value = '';
+}
+
+
+// 送信ボタンクリックorEnterキーで送信
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keypress', (e) => {
+  id (e.key === 'Enter') sendMessage();
+  }
+);
+
+// サーバーから新着メッセージが届いた時の処理
+socket.on('receive_message', (data) => {
+  const parts = data.content.split('|||');
+  const text = parts[0];
+  const time = parts[1] || '';
+
+  // 自分が送ったか他人か判定
+  const isMyMsg = (data.user_id === myId);
+
+  // 新しい吹き出しHTMLの要素を作成
+  const container = document.createElement('div');
+  container.className = `msg-container ${isMyMsg ? 'my-container' : 'other-container'}`;
+       let html = `<div class="msg ${isMyMsg ? 'my-msg' : 'other-msg'}">${text}</div>`;
+        if (time) {
+          html += `<span class="time">${time}</span>`;
+        }
+       container.innerHTML = html;
+
+  // 画面のチャットエリアに追加
+  chatBox.appendChild(container);
+
+  // 一番下まで自動スクロール
+  window.scrollTo(0, document.body.scrollHeight);
+});
 </script>
+
+// 2000ミリ秒ごとにページの自動更新
+//  setInterval(() => {
+//      window.location.reload();
+//    }, 2000);
+</script>
+
 
 </body>
 </html>
@@ -130,36 +206,65 @@ def index():
             messages = [{'content': f"DBエラー: {e}", 'user_id': ''}]
     resp = make_response(render_template_string(HTML_TEMPLATE, messages=messages, my_id=my_id))
     resp.set_cookie('user_id',my_id,max_age=60*60*24*365)
-    return resp
-
-@app.route('/add', methods=['POST'])
-def add_message():
-    init_db()
-    #投稿者のCookieからIDを取得する
-    my_id = request.cookies.get('user_id') or str(uuid.uuid4())
-
-    msg = request.form.get('message')
-    if msg and DATABASE_URL:
-        #今の時間を年月日時分のカタチで取得、加えて9時間足して日本時間のJSTに
-        DIFF_JST_FROM_UTC = 9
-        now = (datetime.datetime.utcnow() + datetime.timedelta(hours=DIFF_JST_FROM_UTC)).strftime('%H:%M')
-        #メッセージ内容と時間とを結合させる。あとでCSSで整える
-        msg_with_time = f"{msg} ||| {now}"
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        #user_idも一緒にinsertする
-        cur.execute('INSERT INTO messages (content, user_id) VALUES (%s, %s);', (msg_with_time, my_id))
-        conn.commit()
-        cur.close()
-        conn.close()
 
 
-    resp = make_response(redirect('/'))
-    resp.set_cookie('user_id', my_id, max_age=60*60*24*365)
-    return resp
+
+#@app.route('/add', methods=['POST'])
+#def add_message():
+#    init_db()
+#    #投稿者のCookieからIDを取得する
+#    my_id = request.cookies.get('user_id') or str(uuid.uuid4())
+#
+#    msg = request.form.get('message')
+#    if msg and DATABASE_URL:
+#        #今の時間を年月日時分のカタチで取得、加えて9時間足して日本時間のJSTに
+#        DIFF_JST_FROM_UTC = 9
+#        now = (datetime.datetime.utcnow() + datetime.timedelta(hours=DIFF_JST_FROM_UTC)).strftime('%H:%M')
+#        #メッセージ内容と時間とを結合させる。あとでCSSで整える
+#        msg_with_time = f"{msg} ||| {now}"
+#
+#        conn = get_db_connection()
+#        cur = conn.cursor()
+#
+#        #user_idも一緒にinsertする
+#        cur.execute('INSERT INTO messages (content, user_id) VALUES (%s, %s);', (msg_with_time, my_id))
+#        conn.commit()
+#        cur.close()
+#        conn.close()
+#
+#
+#    resp = make_response(redirect('/'))
+#    resp.set_cookie('user_id', my_id, max_age=60*60*24*365)
+#    return resp
+
+# ----------------------------------------------------
+# WebSocket: メッセージ受信・一斉送信処理
+# ----------------------------------------------------
+@socketio.on('send_message')
+def handle_send_message(data):
+    content = data.get('content')
+    user_id = data.get('user_id')
+
+    if not content or not user_id:
+        return
+
+    # 1. DBにメッセージを保存
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('INSERT INTO messages (content, user_id) VALUES (%s, %s);', (content, user_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    # 2. 接続中の全員に「新着メッセージだよ！」と送る（broadcast=True）
+    emit('receive_message', {
+        'content': content,
+        'user_id': user_id
+    }, broadcast=True)
+
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=8080)
+# LINEみたいにする→app.runではなく、socketio.runを使う
+#    app.run(host='0.0.0.0', port=8080)
+    socketio.run(app, host='0.0.0.0', port=8080)
