@@ -208,7 +208,7 @@ def index():
             messages = [{'content': f"DBエラー: {e}", 'user_id': ''}]
     resp = make_response(render_template_string(HTML_TEMPLATE, messages=messages, my_id=my_id))
     resp.set_cookie('user_id',my_id,max_age=60*60*24*365)
-return resp
+    return resp
 
 
 #@app.route('/add', methods=['POST'])
