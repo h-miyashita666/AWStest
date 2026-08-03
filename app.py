@@ -96,7 +96,7 @@ HTML_TEMPLATE = '''
     </div>
 
 <script>
-  #2000ミリ秒ごとにページの自動更新
+// 2000ミリ秒ごとにページの自動更新
   setInterval(() => {
       window.location.reload();
     }, 2000);
