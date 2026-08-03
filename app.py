@@ -41,12 +41,18 @@ HTML_TEMPLATE = '''
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>24/7 メッセージ掲示板</title>
     <style>
-        /* 吹き出しの文字サイズや配置を調整 */
-        .msg { max-width: 70%; padding: 8px 12px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-all; display: flex; flex-direction: column; }
+        /* 1メッセージ全体のグループ */
+        .msg-container { display: flex; flex-direction: column; max-width: 70%; }
+        .my-container { align-self: flex-end; align-items: flex-end; }
+        .other-container { align-self: flex-start; align-items: flex-start; }
 
-        /* 時刻の文字（小さくグレーで表示） */
-        .time { font-size: 10px; color: #666; margin-top: 4px; align-self: flex-end; }
-        .my-msg .time { color: #335500; }  /* 自分の吹き出しの中の時刻色 */
+        /* 吹き出し本体 */
+        .msg { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-all; }
+        .my-msg { background: #85e249; color: #000; border-bottom-right-radius: 2px; }
+        .other-msg { background: #ffffff; color: #000; border-bottom-left-radius: 2px; }
+
+        /* 吹き出しの外下の時間 */
+        .time { font-size: 10px; color: #f0f0f0; margin-top: 2px; padding: 0 4px; }
 
 
         body { font-family: sans-serif; max-width: 500px; margin: 20px auto; padding: 10px; background: #8cabd9; }
@@ -69,8 +75,10 @@ HTML_TEMPLATE = '''
     <div class="chat-box">
 	{% for msg in messages %}
                 {% set parts = msg.content.split('|||') %}
-                <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
-                        <span>{{ parts[0] }}</span>
+                <div class="msg-container {% if msg.user_id == my_id %}my-container{% else %}other-container{% endif %}">
+                   <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
+                        {{ parts[0] }}
+                   </div>
                        {% if parts|length > 1 %}
                         <span class="time">{{ parts[1] }}</span>
                        {% endif %}
@@ -86,6 +94,14 @@ HTML_TEMPLATE = '''
             <button type="submit">送信</button>
         </form>
     </div>
+
+<script>
+  #2000ミリ秒ごとにページの自動更新
+  setInterval(() => {
+      window.location.reload();
+    }, 2000);
+</script>
+
 </body>
 </html>
 '''
