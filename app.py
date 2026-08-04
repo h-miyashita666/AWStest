@@ -329,8 +329,8 @@ def index():
         try:
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute('SELECT content, user_id FROM messages ORDER BY id ASC;')
-            messages = [{'content': row[0], 'user_id': row[1]} for row in cur.fetchall()]
+            cur.execute('SELECT content, user_id, username FROM messages ORDER BY id ASC;')
+            messages = [{'content': row[0], 'user_id': row[1], 'username': row[2]} for row in cur.fetchall()]
             cur.close()
             conn.close()
         except Exception as e:
@@ -370,7 +370,7 @@ def handle_send_message(data):
     # 2. 全員に配信
     emit('receive_message', {
         'content': content,
-        'user_id': user_id
+        'user_id': user_id,
         'username': username # 追加: ユーザー名も送信
     }, broadcast=True)
 
