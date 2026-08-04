@@ -159,8 +159,13 @@ CHAT_HTML = '''
     <div class="header">
         <h1>🚀 チャットルーム</h1>
         <div>
-            <span>👤 {{ current_user.username }}</span> | 
-            <a href="/logout">ログアウト</a>
+            {% if current_user.is_authenticated %}
+                <span>👤 {{ current_user.username }}</span> | 
+                <a href="/logout">ログアウト</a>
+            {% else %}
+                <span>👤 名無しさん (ゲスト)</span>
+                <a href="/login" style="color: #ffdddd;">ログイン</a>
+            {% endif %}
         </div>
     </div>
 
@@ -322,7 +327,10 @@ def logout():
 def index():
     init_db()
     # ユーザー固有IDとしてログイン中の user.id を利用
-    my_id = str(current_user.id)
+    if current_user.is_authenticated:
+        my_id = str(current_user.id)
+    else:
+        my_id = 'guest'
 
     messages = []
     if DATABASE_URL:
@@ -342,30 +350,32 @@ def index():
 
 @socketio.on('connect')
 def handle_connect():
-    if not current_user.is_authenticated:
-        return False  # 未ログインユーザーのリアルタイム接続を拒否
+    pass  # 未ログインユーザーでもリアルタイム接続を許可
 
 @socketio.on('send_message')
 def handle_send_message(data):
-    if not current_user.is_authenticated:
-        return
+    if current_user.is_authenticated:
+        user_id = str(current_user.id)
+        username = current_user.username
+    else:
+        user_id = 'guest'
+        username = '名無しさん'
 
     content = data.get('content')
-    # ユーザー識別用IDはクライアントからではなくサーバーの current_user.id を使用（なりすまし防止）
-    user_id = str(current_user.id)
-    username = current_user.username #ログイン中のユーザー名を取得
-
     if not content:
         return
 
     # 1. DBにメッセージを保存　(contentやuser_idとともに保存する)
     if DATABASE_URL:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('INSERT INTO messages (content, user_id) VALUES (%s, %s);', (content, user_id))
-        conn.commit()
-        cur.close()
-        conn.close()
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute('INSERT INTO messages (content, user_id) VALUES (%s, %s);', (content, user_id))
+            conn.commit()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"DB Insert Error: {e}")
 
     # 2. 全員に配信
     emit('receive_message', {
