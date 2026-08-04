@@ -252,6 +252,7 @@ CHAT_HTML = '''
 # --- 画面のルーティング ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    init_db()
     # 登録ボタンが押された時（POST）だけ処理を行う
     if request.method == 'POST':
         username = request.form.get('username')
