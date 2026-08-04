@@ -23,7 +23,7 @@ def init_db():
         cur = conn.cursor()
 
         # ↓★★ 内容を消すときはこの行を使う ★★
-        cur.execute('TRUNCATE TABLE messages RESTART IDENTITY;')
+        #cur.execute('TRUNCATE TABLE messages RESTART IDENTITY;')
 
         cur.execute('''
             CREATE TABLE IF NOT EXISTS messages (
