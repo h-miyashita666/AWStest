@@ -345,11 +345,12 @@ def handle_send_message(data):
     content = data.get('content')
     # ユーザー識別用IDはクライアントからではなくサーバーの current_user.id を使用（なりすまし防止）
     user_id = str(current_user.id)
+    username = current_user.username #ログイン中のユーザー名を取得
 
     if not content:
         return
 
-    # 1. DBにメッセージを保存
+    # 1. DBにメッセージを保存　(contentやuser_idとともに保存する)
     if DATABASE_URL:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -362,6 +363,7 @@ def handle_send_message(data):
     emit('receive_message', {
         'content': content,
         'user_id': user_id
+        'username': username # 追加: ユーザー名も送信
     }, broadcast=True)
 
 if __name__ == '__main__':
