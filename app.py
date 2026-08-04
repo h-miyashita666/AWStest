@@ -329,7 +329,7 @@ def index():
         try:
             conn = get_db_connection()
             cur = conn.cursor()
-            cur.execute('SELECT content, user_id, username FROM messages ORDER BY id ASC;')
+            cur.execute('SELECT m.content, m.user_id, u.username FROM messages m LEFT JOIN users u ON m.user_id = CAST(u.id AS TEXT) ORDER BY m.id ASC;')
             messages = [{'content': row[0], 'user_id': row[1], 'username': row[2]} for row in cur.fetchall()]
             cur.close()
             conn.close()
