@@ -250,12 +250,16 @@ CHAT_HTML = '''
 '''
 
 # --- 画面のルーティング ---
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # 登録ボタンが押された時（POST）だけ処理を行う
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+
+        # 入力チェック
+        if not username or not password:
+            return "ユーザー名とパスワードを入力してください。"
         
         hashed_pw = generate_password_hash(password)
 
@@ -267,9 +271,13 @@ def register():
                 conn.commit()
                 cur.close()
                 conn.close()
+                # 成功したらログイン画面へリダイレクト
                 return redirect(url_for('login'))
             except Exception as e:
-                return f"登録エラー: 既に存在するユーザー名です ({e})"
+                # 重複エラーの場合
+                return f"登録エラー: 「{username}」は既に使われているユーザー名です。別の名前を試してください。"
+
+    # 単にページを開いた時（GET）は登録画面を表示するだけ
     return render_template_string(REGISTER_HTML)
 
 @app.route('/login', methods=['GET', 'POST'])
