@@ -90,6 +90,7 @@ LOGIN_HTML = '''
         input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
         .link { margin-top: 15px; text-align: center; }
+        .guest-btn { display: block; width: 100%; margin-top: 15px; padding: 10px; background: #6c757d; color: white; text-align: center; text-decoration: none; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -99,6 +100,7 @@ LOGIN_HTML = '''
         <input type="password" name="password" placeholder="パスワード" required>
         <button type="submit">ログイン</button>
     </form>
+    <a href="/" class="guest-btn">ログインせずに👤名無しさんとして参加</a>
     <div class="link"><a href="/register">アカウント新規作成はこちら</a></div>
 </body>
 </html>
