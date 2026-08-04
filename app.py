@@ -138,8 +138,8 @@ CHAT_HTML = '''
     <title>24/7 メッセージ掲示板</title>
     <style>
         .msg-container { display: flex; flex-direction: column; max-width: 70%; }
-        .my-container .username-label { align-self: flex-end; align-items: flex-end; }
-        .other-container .username-label { align-self: flex-start; align-items: flex-start; }
+        .my-container { align-self: flex-end; align-items: flex-end; }
+        .other-container { align-self: flex-start; align-items: flex-start; }
         .username-label { font-size: 0.75rem; color: #666; margin-bottom: 2px;}
         .msg { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-all; }
         .my-msg { background: #85e249; color: #000; border-bottom-right-radius: 2px; }
