@@ -140,6 +140,7 @@ CHAT_HTML = '''
         .msg-container { display: flex; flex-direction: column; max-width: 70%; }
         .my-container { align-self: flex-end; align-items: flex-end; }
         .other-container { align-self: flex-start; align-items: flex-start; }
+        .username-label { font-size: 0.75rem; color: #666; margin-bottom: 2px;}
         .msg { padding: 10px 14px; border-radius: 15px; font-size: 14px; line-height: 1.4; word-break: break-all; }
         .my-msg { background: #85e249; color: #000; border-bottom-right-radius: 2px; }
         .other-msg { background: #ffffff; color: #000; border-bottom-left-radius: 2px; }
@@ -166,6 +167,7 @@ CHAT_HTML = '''
     <div class="chat-box">
 	{% for msg in messages %}
             {% set parts = msg.content.split('|||') %}
+            <div class="username-label">{{ msg.username if msg.username else '名無しさん' }}</div>
             <div class="msg-container {% if msg.user_id == my_id %}my-container{% else %}other-container{% endif %}">
                 <div class="msg {% if msg.user_id == my_id %}my-msg{% else %}other-msg{% endif %}">
                     {{ parts[0] }}
@@ -227,11 +229,17 @@ CHAT_HTML = '''
 
     const container = document.createElement('div');
     container.className = `msg-container ${isMyMsg ? 'my-container' : 'other-container'}`;
+    
+    // 送信者名を表示する
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'username-label';
+    nameDiv.textContent = data.username || '名無しさん';
+    container.appendChild(nameDiv);
 
+    // 吹き出し要素を作成
     const msgDiv = document.createElement('div');
     msgDiv.className = `msg ${isMyMsg ? 'my-msg' : 'other-msg'}`;
     msgDiv.textContent = text; 
-
     container.appendChild(msgDiv);
 
     if (time) {
