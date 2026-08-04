@@ -21,6 +21,10 @@ def init_db():
       try:
         conn = get_db_connection()
         cur = conn.cursor()
+
+        # ↓★★ 内容を消すときはこの行を使う ★★
+        cur.execute('TRUNCATE TABLE messages RESTART IDENTITY;')
+
         cur.execute('''
             CREATE TABLE IF NOT EXISTS messages (
                 id SERIAL PRIMARY KEY,
