@@ -100,7 +100,7 @@ LOGIN_HTML = '''
         <input type="password" name="password" placeholder="パスワード" required>
         <button type="submit">ログイン</button>
     </form>
-    <a href="/" class="guest-btn">ログインせずに👤名無しさんとして参加</a>
+    <a href="/" class="guest-btn">ログインせずにゲストとして参加</a>
     <div class="link"><a href="/register">アカウント新規作成はこちら</a></div>
 </body>
 </html>
@@ -325,7 +325,6 @@ def logout():
     return redirect(url_for('login'))
 
 @app.route('/')
-@login_required  # 未ログインなら自動で /login へ飛ぶ
 def index():
     init_db()
     # ユーザー固有IDとしてログイン中の user.id を利用
