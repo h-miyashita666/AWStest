@@ -275,7 +275,7 @@ def register():
                 return redirect(url_for('login'))
             except Exception as e:
                 # 重複エラーの場合
-                return f"登録エラー: 「{username}」は既に使われているユーザー名です。別の名前を試してください。"
+                return f"登録エラー: 「{username}」は既に使われているユーザー名です。別の名前を試してください。{e}"
 
     # 単にページを開いた時（GET）は登録画面を表示するだけ
     return render_template_string(REGISTER_HTML)
