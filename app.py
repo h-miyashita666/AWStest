@@ -152,7 +152,7 @@ input.addEventListener('keypress', (e) => {
   }
 );
 
-// サーバーから新着メッセージが届いた時の処理
+// サーバーから新着メッセージが届いた時の処理（XSS対策版）
 socket.on('receive_message', (data) => {
   const parts = data.content.split('|||');
   const text = parts[0];
@@ -161,16 +161,29 @@ socket.on('receive_message', (data) => {
   // 自分が送ったか他人か判定
   const isMyMsg = (data.user_id === myId);
 
-  // 新しい吹き出しHTMLの要素を作成
+  // 新しいメッセージのコンテナ（親要素）を作成
   const container = document.createElement('div');
   container.className = `msg-container ${isMyMsg ? 'my-container' : 'other-container'}`;
-       let html = `<div class="msg ${isMyMsg ? 'my-msg' : 'other-msg'}">${text}</div>`;
-        if (time) {
-          html += `<span class="time">${time}</span>`;
-        }
-       container.innerHTML = html;
 
-  // 画面のチャットエリアに追加
+  // 1. 吹き出し要素本体を作成
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `msg ${isMyMsg ? 'my-msg' : 'other-msg'}`;
+  
+  // ★重要★ `innerHTML` の代わりに `textContent` を使う！
+  // これにより、入力された文字が「HTMLタグ」としてではなく、単なる「文字」として処理されます。
+  msgDiv.textContent = text; 
+
+  container.appendChild(msgDiv);
+
+  // 2. 時刻要素を作成して追加
+  if (time) {
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'time';
+    timeSpan.textContent = time; // ここも textContent
+    container.appendChild(timeSpan);
+  }
+
+  // 完成したメッセージ要素を画面のチャットエリアに追加
   chatBox.appendChild(container);
 
   // 一番下まで自動スクロール
